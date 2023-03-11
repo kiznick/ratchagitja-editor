@@ -22,7 +22,20 @@ function App() {
             const data = await response.text()
             const json = await csv().fromString(data)
 
-            setFileList(json.slice(0, 100)) // limit 100
+            setFileList([
+                {
+                    'id': 'this-is-demo-file',
+                    'URL': 'https://cdn.filestackcontent.com/wcrjf9qPTCKXV3hMXDwK',
+                    'วันที่': '0',
+                    'เรื่อง': 'File for testing only.',
+                    'เล่ม': '0',
+                    'ตอน': '0',
+                    'ประเภท': '0',
+                    'หน้า': '0',
+                    'เล่มที่': '0',
+                },
+                ...json.slice(0, 99)
+            ]) // limit 100
             setIsLoading(false)
         }
 
@@ -45,18 +58,18 @@ function App() {
     };
 
     async function viewPDF(url: string) {
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'no-cors',
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
-            },
-        });
-        const data = await response.blob()
+        const response = await fetch(url)
 
-        // const file = new File([data], 'test.pdf', { type: 'application/pdf' })
+        // covert response to base64
+        const blob = await response.blob()
+        const reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = function() {
+            const base64data = reader.result
+            setPdfFile(base64data)
+        }
 
-        setPdfFile(data)
+        // setPdfFile(file)
     }
 
     return (
