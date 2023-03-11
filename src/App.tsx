@@ -5,6 +5,8 @@ import './App.css'
 import type { File } from './types/File'
 import FileItem from './components/FileItem'
 import { Document, Page } from 'react-pdf/dist/esm/entry.vite'
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import MDEditor from '@uiw/react-md-editor';
 
 function App() {
@@ -50,12 +52,6 @@ function App() {
         alert('loaded')
         setPdfPageNumber(numPages)
     }
-
-    const options = {
-        cMapUrl: 'cmaps/',
-        cMapPacked: true,
-        standardFontDataUrl: 'standard_fonts/',
-    };
 
     async function viewPDF(url: string) {
         const response = await fetch(url)
@@ -128,7 +124,11 @@ function App() {
                         file={pdfFile}
                         onLoadSuccess={onDocumentLoadSuccess}
                         onLoadError={(error) => console.log("Inside Error", error)}
-                        options={options}
+                        // options={{
+                        //     cMapUrl: 'cmaps/',
+                        //     cMapPacked: true,
+                        //     standardFontDataUrl: 'standard_fonts/',
+                        // }}
                     >
                         {Array.from(new Array(pdfPageNumber), (el, index) => (
                             <Page key={`page_${index + 1}`} pageNumber={index + 1} />

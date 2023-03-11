@@ -8,16 +8,7 @@ type Props = {
 
 export default function FileItem(props: Props) {
     const { file, searchKeywork } = props
-
-    // id: string /
-    // URL: string
-    // วันที่: string /
-    // เรื่อง: string /
-    // เล่ม: string /
-    // ตอน: string /
-    // ประเภท: string /
-    // หน้า: string
-    // เล่มที่: string /
+    
     return (
         <article className="flex items-start space-x-6 p-6">
             <img src="http://placekitten.com/120/176" alt="" width="60" height="88" className="flex-none rounded-md bg-slate-100" />
