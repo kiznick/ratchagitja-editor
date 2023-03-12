@@ -154,7 +154,7 @@ function App() {
                             </div>
                         </div>
 
-                        <ul className="divide-y divide-slate-100 max-w-full overflow-y-auto max-h-[85vh]">
+                        <ul className="divide-y divide-slate-100 max-w-full overflow-y-auto max-h-[80vh]">
                             {fileList.filter((value) => value.เรื่อง.includes(searchKeywork)).map((file) => (
                                 <div
                                     key={file.id}
@@ -170,6 +170,10 @@ function App() {
                                 </div>
                             ))}
                         </ul>
+
+                        <div className="group relative py-4 px-6">
+                            * Show only 100 files.
+                        </div>
 
                     </div>
                 </div>
