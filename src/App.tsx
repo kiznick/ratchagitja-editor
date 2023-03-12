@@ -178,7 +178,7 @@ function App() {
                             setCurrentPdfPageNumber(1)
                         }}
                         onLoadError={(error) => console.log("Inside Error", error)}
-                        className="relative"
+                        className="relative group"
                     >
                         {
                             Array.from(generateArrayAroundNumber(currentPdfPageNumber, 3)).map((pageNumber) => {
@@ -213,7 +213,7 @@ function App() {
                             */}
 
                             <div
-                                className={`group relative inline-flex rounded-md shadow-xl bg-white text-black ${isPassTutorial && `opacity-0 hover:opacity-100 transition-opacity`}`}
+                                className={`group relative inline-flex rounded-md shadow-xl bg-white text-black ${isPassTutorial && `opacity-0 group-hover:opacity-100 transition-opacity`}`}
                                 role="group"
                                 onMouseOut={passTutorial}
                             >
