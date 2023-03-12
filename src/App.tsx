@@ -232,7 +232,7 @@ function App() {
                     </Document>
                 </div>
 
-                <div className={`${isOpenFileList ? `col-span-12 md:col-span-4` : `col-span-12 md:col-span-5`}`}>
+                <div className={`${isOpenFileList ? `col-span-12 md:col-span-4` : `col-span-12 md:col-span-6`}`}>
                     <MDEditor
                         value={mdFile}
                         onChange={(value) => setMdFile(value)}
