@@ -32,7 +32,7 @@ function App() {
             setFileList([
                 {
                     'id': 'this-is-demo-file',
-                    'URL': 'http://localhost:5173/140A015N0000000000100.pdf',
+                    'URL': 'https://cdn.filestackcontent.com/wcrjf9qPTCKXV3hMXDwK',
                     'วันที่': '0',
                     'เรื่อง': 'File for testing only.',
                     'เล่ม': '0',
@@ -61,19 +61,24 @@ function App() {
     }
 
     async function viewPDF(url: string) {
-        const response = await fetch(url)
+        fetch(url).then(async (response) => {
+            if(!response.ok) {
+                return response.text().then(text => { throw new Error(text) })
+            }
 
-        // covert response to base64
-        const blob = await response.blob()
-        const reader = new FileReader()
-        reader.readAsDataURL(blob)
-        reader.onloadend = function() {
-            const base64data = reader.result
-            setPdfFile(base64data)
-            setOpenFileList(false)
-        }
-
-        // setPdfFile(file)
+            // covert response to base64
+            const blob = await response.blob()
+            const reader = new FileReader()
+            reader.readAsDataURL(blob)
+            reader.onloadend = function() {
+                const base64data = reader.result
+                setPdfFile(base64data)
+                setOpenFileList(false)
+            }
+        }).catch(err => {
+            console.log('caught it!', err);
+            alert('Fetch error: ' + err)
+        })
     }
 
     function closePDF() {
@@ -223,7 +228,7 @@ function App() {
                                         <span
                                             className="absolute transition-opacity -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700"
                                         >
-                                            Hover to see more pages
+                                            Hover to change page.
                                         </span>
                                     )
                                 }
