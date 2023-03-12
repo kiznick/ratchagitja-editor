@@ -20,7 +20,11 @@ function App() {
     const [pdfPageNumber, setPdfPageNumber] = useState<number>(1)
     const [pdfFile, setPdfFile] = useState<any>()
     const [isPdfLoading, setPdfLoading] = useState<boolean>(false)
+
+    const [currentFile, setCurrentFile] = useState<File | null>(null)
+
     const [isOpenFileList, setOpenFileList] = useState<boolean>(true)
+
     const [mdFile, setMdFile] = useState<string | undefined>('**Hello world!!!**')
     const [isPassTutorial, setIsPassTutorial] = useState<boolean>(true)
 
@@ -93,6 +97,8 @@ function App() {
         setPdfFile(null)
         setPdfPageNumber(0)
         setCurrentPdfPageNumber(0)
+        setOpenFileList(true)
+        setCurrentFile(null)
     }
 
     function passTutorial() {
@@ -152,7 +158,10 @@ function App() {
                             {fileList.filter((value) => value.เรื่อง.includes(searchKeywork)).map((file) => (
                                 <div
                                     key={file.id}
-                                    onClick={() => viewPDF(file.URL)}
+                                    onClick={() => {
+                                        viewPDF(file.URL)
+                                        setCurrentFile(file)
+                                    }}
                                 >
                                     <FileItem
                                         file={file}
@@ -284,8 +293,27 @@ function App() {
                         value={mdFile}
                         onChange={(value) => setMdFile(value)}
                         autoFocus={true}
-                        height={870}
+                        height={820}
                     />
+                    <div className="text-right">
+                        <button
+                            className="mt-3 px-4 py-2 rounded bg-indigo-500"
+                            onClick={() => {
+                                if(!mdFile) {
+                                    return
+                                }
+
+                                const element = document.createElement("a")
+                                const file = new Blob([mdFile], {type: 'text/plain'})
+                                element.href = URL.createObjectURL(file)
+                                element.download = (currentFile?.เรื่อง || 'file') +'.md'
+                                document.body.appendChild(element)
+                                element.click()
+                            }}
+                        >
+                            Export Markdown
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
