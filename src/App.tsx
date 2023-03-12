@@ -19,7 +19,8 @@ function App() {
     const [currentPdfPageNumber, setCurrentPdfPageNumber] = useState<number>(1)
     const [pdfPageNumber, setPdfPageNumber] = useState<number>(1)
     const [pdfFile, setPdfFile] = useState<any>()
-    const [mdFile, setMdFile] = useState<string>('**Hello world!!!**')
+    const [isOpenFileList, setOpenFileList] = useState<boolean>(true)
+    const [mdFile, setMdFile] = useState<string | undefined>('**Hello world!!!**')
     const [isPassTutorial, setIsPassTutorial] = useState<boolean>(true)
 
     useEffect(() => {
@@ -69,6 +70,7 @@ function App() {
         reader.onloadend = function() {
             const base64data = reader.result
             setPdfFile(base64data)
+            setOpenFileList(false)
         }
 
         // setPdfFile(file)
@@ -90,10 +92,10 @@ function App() {
     }
 
     return (
-        <div className="container p-4 mx-auto">
+        <div className="container p-4 mx-auto h-screen">
             <div className="grid grid-cols-12 gap-5">
 
-                <div className="col-span-12 md:col-span-3">
+                <div className={`col-span-12 md:col-span-3 ${!isOpenFileList &&  `hidden`}`}>
                     <div className="rounded-xl shadow-xl divide-y my-auto xl:mt-18 bg-slate-800 divide-slate-200/5 h-full">
                         
                         <div className="group relative py-4 px-6">
@@ -140,7 +142,20 @@ function App() {
                     </div>
                 </div>
 
-                <div className="col-span-12 md:col-span-5 aspect-[1/1.41421] relative">
+                <div className={`relative ${isOpenFileList ? `col-span-12 md:col-span-5` : `col-span-12 md:col-span-6 flex justify-end`}`}>
+                    {
+                        !isOpenFileList && (
+                            <div className="absolute top-0 left-0 z-10">
+                                <button
+                                    className="bg-slate-800 text-white rounded-full px-4 py-2"
+                                    onClick={() => setOpenFileList(true)}
+                                >
+                                    Open file list.
+                                </button>
+                            </div>
+                        )
+                    }
+                    
                     <Document
                         file={pdfFile}
                         onLoadSuccess={({ numPages }) => {
@@ -148,6 +163,7 @@ function App() {
                             setCurrentPdfPageNumber(1)
                         }}
                         onLoadError={(error) => console.log("Inside Error", error)}
+                        className="relative"
                         // options={{
                         //     cMapUrl: 'cmaps/',
                         //     cMapPacked: true,
@@ -168,7 +184,7 @@ function App() {
                         ))}
 
                         <div
-                            className="absolute bottom-[32px] w-full flex justify-center"
+                            className={`absolute ${isOpenFileList ? 'bottom-[32px]' : 'bottom-[64px]'} w-full flex justify-center`}
                         >
                             {/*
                                 <button
@@ -216,10 +232,12 @@ function App() {
                     </Document>
                 </div>
 
-                <div className="col-span-12 md:col-span-4 bg-pink-500">
+                <div className={`${isOpenFileList ? `col-span-12 md:col-span-4` : `col-span-12 md:col-span-5`}`}>
                     <MDEditor
                         value={mdFile}
-                        onChange={(value) => value && setMdFile(value)}
+                        onChange={(value) => setMdFile(value)}
+                        autoFocus={true}
+                        height={900}
                     />
                 </div>
             </div>
