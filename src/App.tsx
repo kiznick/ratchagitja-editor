@@ -19,6 +19,7 @@ function App() {
     const [currentPdfPageNumber, setCurrentPdfPageNumber] = useState<number>(1)
     const [pdfPageNumber, setPdfPageNumber] = useState<number>(1)
     const [pdfFile, setPdfFile] = useState<any>()
+    const [isPdfLoading, setPdfLoading] = useState<boolean>(false)
     const [isOpenFileList, setOpenFileList] = useState<boolean>(true)
     const [mdFile, setMdFile] = useState<string | undefined>('**Hello world!!!**')
     const [isPassTutorial, setIsPassTutorial] = useState<boolean>(true)
@@ -61,7 +62,12 @@ function App() {
     }
 
     async function viewPDF(url: string) {
-        fetch(url).then(async (response) => {
+        setPdfLoading(true)
+        fetch('https://cors-anywhere.herokuapp.com/' + url, {
+            headers: {
+                'Origin': ''
+            }
+        }).then(async (response) => {
             if(!response.ok) {
                 return response.text().then(text => { throw new Error(text) })
             }
@@ -74,8 +80,10 @@ function App() {
                 const base64data = reader.result
                 setPdfFile(base64data)
                 setOpenFileList(false)
+                setPdfLoading(false)
             }
         }).catch(err => {
+            setPdfLoading(false)
             console.log('caught it!', err);
             alert('Fetch error: ' + err)
         })
@@ -171,82 +179,104 @@ function App() {
                         )
                     }
                     
-                    <Document
-                        file={pdfFile}
-                        onLoadSuccess={({ numPages }) => {
-                            setPdfPageNumber(numPages)
-                            setCurrentPdfPageNumber(1)
-                        }}
-                        onLoadError={(error) => console.log("Inside Error", error)}
-                        className="relative group"
-                    >
-                        {
-                            Array.from(generateArrayAroundNumber(currentPdfPageNumber, 3)).map((pageNumber) => {
-                                if(pageNumber < 1 || pageNumber > pdfPageNumber) {
-                                    return null
-                                }
-
-                                return (
-                                    <Page
-                                        key={`page_${pageNumber}`}
-                                        pageNumber={pageNumber}
-                                        className={`${currentPdfPageNumber != pageNumber && `hidden`}`}
-                                        scale={1.034}
-                                        onGetTextSuccess={(textItems) => {
-                                            console.log(textItems)
-                                        }}
-                                    />
-                                )
-                            })
-                        }
-
-                        <div
-                            className={`absolute ${isOpenFileList ? 'bottom-[32px]' : 'bottom-[64px]'} w-full flex justify-center`}
-                        >
-                            {/*
-                                <button
-                                    className="bg-red-500 px-4 py-2 rounded"
-                                    onClick={closePDF}
-                                >
-                                    Close
-                                </button>
-                            */}
-
-                            <div
-                                className={`group relative inline-flex rounded-md shadow-xl bg-white text-black ${isPassTutorial && `opacity-0 group-hover:opacity-100 transition-opacity`}`}
-                                role="group"
-                                onMouseOut={passTutorial}
-                            >
-                                <button
-                                    className="px-4 py-2 rounded-l-md enabled:hover:bg-slate-200 disabled:text-gray-200"
-                                    disabled={currentPdfPageNumber == 1}
-                                    onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber - 1)}
-                                >
-                                    &lt;
-                                </button>
-                                <span className="px-4 py-2">
-                                    {currentPdfPageNumber} / {pdfPageNumber}
-                                </span>
-                                <button
-                                    className="px-4 py-2 rounded-r-md enabled:hover:bg-slate-200 disabled:text-gray-200"
-                                    disabled={currentPdfPageNumber == pdfPageNumber}
-                                    onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber + 1)}
-                                >
-                                    &gt;
-                                </button>
-                                
-                                {
-                                    !isPassTutorial && (
-                                        <span
-                                            className="absolute transition-opacity -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700"
-                                        >
-                                            Hover to change page.
-                                        </span>
+                    {
+                        isPdfLoading ? (
+                            <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-gray-500">Loading...</div>
+                                    <div className="text-gray-500">Please wait.</div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Document
+                                file={pdfFile}
+                                onLoadSuccess={({ numPages }) => {
+                                    setPdfPageNumber(numPages)
+                                    setCurrentPdfPageNumber(1)
+                                }}
+                                onLoadError={(error) => console.log("Inside Error", error)}
+                                className="relative group"
+                                noData={
+                                    (
+                                        <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-gray-500">No data</div>
+                                                <div className="text-gray-500">Please select file to view.</div>
+                                            </div>
+                                        </div>
                                     )
                                 }
-                            </div>
-                        </div>
-                    </Document>
+                                loading={
+                                    (
+                                        <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold text-gray-500">Loading...</div>
+                                                <div className="text-gray-500">Please wait.</div>
+                                            </div>
+                                        </div>
+                                    )
+                                }
+                            >
+                                {
+                                    Array.from(generateArrayAroundNumber(currentPdfPageNumber, 3)).map((pageNumber) => {
+                                        if(pageNumber < 1 || pageNumber > pdfPageNumber) {
+                                            return null
+                                        }
+        
+                                        return (
+                                            <Page
+                                                key={`page_${pageNumber}`}
+                                                pageNumber={pageNumber}
+                                                className={`${currentPdfPageNumber != pageNumber && `hidden`}`}
+                                                scale={1.034}
+                                                onGetTextSuccess={(textItems) => {
+                                                    console.log(textItems)
+                                                }}
+                                            />
+                                        )
+                                    })
+                                }
+        
+                                <div
+                                    className={`absolute ${isOpenFileList ? 'bottom-[32px]' : 'bottom-[64px]'} w-full flex justify-center`}
+                                >
+                                    <div
+                                        className={`group relative inline-flex rounded-md shadow-xl bg-white text-black ${isPassTutorial && `opacity-0 group-hover:opacity-100 transition-opacity`}`}
+                                        role="group"
+                                        onMouseOut={passTutorial}
+                                    >
+                                        <button
+                                            className="px-4 py-2 rounded-l-md enabled:hover:bg-slate-200 disabled:text-gray-200"
+                                            disabled={currentPdfPageNumber == 1}
+                                            onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber - 1)}
+                                        >
+                                            &lt;
+                                        </button>
+                                        <span className="px-4 py-2">
+                                            {currentPdfPageNumber} / {pdfPageNumber}
+                                        </span>
+                                        <button
+                                            className="px-4 py-2 rounded-r-md enabled:hover:bg-slate-200 disabled:text-gray-200"
+                                            disabled={currentPdfPageNumber == pdfPageNumber}
+                                            onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber + 1)}
+                                        >
+                                            &gt;
+                                        </button>
+                                        
+                                        {
+                                            !isPassTutorial && (
+                                                <span
+                                                    className="absolute transition-opacity -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700"
+                                                >
+                                                    Hover to change page.
+                                                </span>
+                                            )
+                                        }
+                                    </div>
+                                </div>
+                            </Document>
+                        )
+                    }
                 </div>
 
                 <div className={`${isOpenFileList ? `col-span-12 md:col-span-4` : `col-span-12 md:col-span-6`}`}>
