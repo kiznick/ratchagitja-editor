@@ -169,24 +169,21 @@ function App() {
                         }}
                         onLoadError={(error) => console.log("Inside Error", error)}
                         className="relative"
+                        renderMode="svg"
                         // options={{
                         //     cMapUrl: 'cmaps/',
                         //     cMapPacked: true,
                         //     standardFontDataUrl: 'standard_fonts/',
                         // }}
                     >
-                        {Array.from(new Array(pdfPageNumber), (el, index) => (
-                            currentPdfPageNumber == (index + 1) && (
-                                <Page
-                                    key={`page_${index + 1}`}
-                                    pageNumber={index + 1}
-                                    scale={1.034}
-                                    onGetTextSuccess={(textItems) => {
-                                        console.log(textItems)
-                                    }}
-                                />
-                            )
-                        ))}
+
+                        <Page
+                            pageNumber={currentPdfPageNumber}
+                            scale={1.034}
+                            onGetTextSuccess={(textItems) => {
+                                console.log(textItems)
+                            }}
+                        />
 
                         <div
                             className={`absolute ${isOpenFileList ? 'bottom-[32px]' : 'bottom-[64px]'} w-full flex justify-center`}
@@ -242,7 +239,7 @@ function App() {
                         value={mdFile}
                         onChange={(value) => setMdFile(value)}
                         autoFocus={true}
-                        height={900}
+                        height={870}
                     />
                 </div>
             </div>
