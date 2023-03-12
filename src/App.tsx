@@ -95,6 +95,16 @@ function App() {
         sessionStorage.setItem(storage_is_pass_tutorial, '1')
         setIsPassTutorial(true)
     }
+    
+    function generateArrayAroundNumber(num: number, size: number): number[] {
+        const outputArray = []
+      
+        for (let i = num - size; i <= num + size; i++) {
+            outputArray.push(i)
+        }
+      
+        return outputArray
+    }
 
     return (
         <div className="container p-4 mx-auto h-screen">
@@ -169,21 +179,26 @@ function App() {
                         }}
                         onLoadError={(error) => console.log("Inside Error", error)}
                         className="relative"
-                        renderMode="svg"
-                        // options={{
-                        //     cMapUrl: 'cmaps/',
-                        //     cMapPacked: true,
-                        //     standardFontDataUrl: 'standard_fonts/',
-                        // }}
                     >
+                        {
+                            Array.from(generateArrayAroundNumber(currentPdfPageNumber, 3)).map((pageNumber) => {
+                                if(pageNumber < 1 || pageNumber > pdfPageNumber) {
+                                    return null
+                                }
 
-                        <Page
-                            pageNumber={currentPdfPageNumber}
-                            scale={1.034}
-                            onGetTextSuccess={(textItems) => {
-                                console.log(textItems)
-                            }}
-                        />
+                                return (
+                                    <Page
+                                        key={`page_${pageNumber}`}
+                                        pageNumber={pageNumber}
+                                        className={`${currentPdfPageNumber != pageNumber && `hidden`}`}
+                                        scale={1.034}
+                                        onGetTextSuccess={(textItems) => {
+                                            console.log(textItems)
+                                        }}
+                                    />
+                                )
+                            })
+                        }
 
                         <div
                             className={`absolute ${isOpenFileList ? 'bottom-[32px]' : 'bottom-[64px]'} w-full flex justify-center`}
