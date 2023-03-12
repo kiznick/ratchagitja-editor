@@ -5,18 +5,22 @@ import './App.css'
 import type { File } from './types/File'
 import FileItem from './components/FileItem'
 import { Document, Page } from 'react-pdf/dist/esm/entry.vite'
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-import MDEditor from '@uiw/react-md-editor';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css'
+import 'react-pdf/dist/esm/Page/TextLayer.css'
+import MDEditor from '@uiw/react-md-editor'
+
+const storage_is_pass_tutorial = 'k-is-pass-tutorial'
 
 function App() {
     const [fileList, setFileList] = useState<File[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
-    const [searchKeywork, setSearchKeywork] = useState<string>('');
+    const [searchKeywork, setSearchKeywork] = useState<string>('')
 
+    const [currentPdfPageNumber, setCurrentPdfPageNumber] = useState<number>(1)
     const [pdfPageNumber, setPdfPageNumber] = useState<number>(1)
     const [pdfFile, setPdfFile] = useState<any>()
-    const [mdFile, setMdFile] = useState<string>('**Hello world!!!**');
+    const [mdFile, setMdFile] = useState<string>('**Hello world!!!**')
+    const [isPassTutorial, setIsPassTutorial] = useState<boolean>(true)
 
     useEffect(() => {
         async function fetchData() {
@@ -27,7 +31,7 @@ function App() {
             setFileList([
                 {
                     'id': 'this-is-demo-file',
-                    'URL': 'https://cdn.filestackcontent.com/wcrjf9qPTCKXV3hMXDwK',
+                    'URL': 'http://localhost:5173/140A015N0000000000100.pdf',
                     'วันที่': '0',
                     'เรื่อง': 'File for testing only.',
                     'เล่ม': '0',
@@ -44,13 +48,15 @@ function App() {
         fetchData()
     }, [])
 
+    useEffect(() => {
+        const is_pass_tutorial = sessionStorage.getItem(storage_is_pass_tutorial)
+        if(!is_pass_tutorial) {
+            setIsPassTutorial(false)
+        }
+    }, [])
+
     if(isLoading) {
         return <div>Loading...</div>
-    }
-
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-        alert('loaded')
-        setPdfPageNumber(numPages)
     }
 
     async function viewPDF(url: string) {
@@ -66,6 +72,21 @@ function App() {
         }
 
         // setPdfFile(file)
+    }
+
+    function closePDF() {
+        setPdfFile(null)
+        setPdfPageNumber(0)
+        setCurrentPdfPageNumber(0)
+    }
+
+    function passTutorial() {
+        if(isPassTutorial) {
+            return
+        }
+
+        sessionStorage.setItem(storage_is_pass_tutorial, '1')
+        setIsPassTutorial(true)
     }
 
     return (
@@ -119,10 +140,13 @@ function App() {
                     </div>
                 </div>
 
-                <div className="col-span-12 md:col-span-5 bg-pink-200 aspect-[1/1.41421]">
+                <div className="col-span-12 md:col-span-5 aspect-[1/1.41421] relative">
                     <Document
                         file={pdfFile}
-                        onLoadSuccess={onDocumentLoadSuccess}
+                        onLoadSuccess={({ numPages }) => {
+                            setPdfPageNumber(numPages)
+                            setCurrentPdfPageNumber(1)
+                        }}
                         onLoadError={(error) => console.log("Inside Error", error)}
                         // options={{
                         //     cMapUrl: 'cmaps/',
@@ -131,8 +155,64 @@ function App() {
                         // }}
                     >
                         {Array.from(new Array(pdfPageNumber), (el, index) => (
-                            <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+                            currentPdfPageNumber == (index + 1) && (
+                                <Page
+                                    key={`page_${index + 1}`}
+                                    pageNumber={index + 1}
+                                    scale={1.034}
+                                    onGetTextSuccess={(textItems) => {
+                                        console.log(textItems)
+                                    }}
+                                />
+                            )
                         ))}
+
+                        <div
+                            className="absolute bottom-[32px] w-full flex justify-center"
+                        >
+                            {/*
+                                <button
+                                    className="bg-red-500 px-4 py-2 rounded"
+                                    onClick={closePDF}
+                                >
+                                    Close
+                                </button>
+                            */}
+
+                            <div
+                                className={`group relative inline-flex rounded-md shadow-xl bg-white text-black ${isPassTutorial && `opacity-0 hover:opacity-100 transition-opacity`}`}
+                                role="group"
+                                onMouseOut={passTutorial}
+                            >
+                                <button
+                                    className="px-4 py-2 rounded-l-md enabled:hover:bg-slate-200 disabled:text-gray-200"
+                                    disabled={currentPdfPageNumber == 1}
+                                    onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber - 1)}
+                                >
+                                    &lt;
+                                </button>
+                                <span className="px-4 py-2">
+                                    {currentPdfPageNumber} / {pdfPageNumber}
+                                </span>
+                                <button
+                                    className="px-4 py-2 rounded-r-md enabled:hover:bg-slate-200 disabled:text-gray-200"
+                                    disabled={currentPdfPageNumber == pdfPageNumber}
+                                    onClick={() => setCurrentPdfPageNumber(currentPdfPageNumber + 1)}
+                                >
+                                    &gt;
+                                </button>
+                                
+                                {
+                                    !isPassTutorial && (
+                                        <span
+                                            className="absolute transition-opacity -left-5 -top-2 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm after:absolute after:left-1/2 after:top-full after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700"
+                                        >
+                                            Hover to see more pages
+                                        </span>
+                                    )
+                                }
+                            </div>
+                        </div>
                     </Document>
                 </div>
 
