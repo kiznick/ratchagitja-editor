@@ -181,7 +181,7 @@ function App() {
                     
                     {
                         isPdfLoading ? (
-                            <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                            <div className="h-[90.5vh] w-[32vw] flex justify-center items-center bg-white">
                                 <div className="text-center">
                                     <div className="text-2xl font-bold text-gray-500">Loading...</div>
                                     <div className="text-gray-500">Please wait.</div>
@@ -198,7 +198,7 @@ function App() {
                                 className="relative group"
                                 noData={
                                     (
-                                        <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                                        <div className="h-[90.5vh] w-[32vw] flex justify-center items-center bg-white">
                                             <div className="text-center">
                                                 <div className="text-2xl font-bold text-gray-500">No data</div>
                                                 <div className="text-gray-500">Please select file to view.</div>
@@ -208,7 +208,7 @@ function App() {
                                 }
                                 loading={
                                     (
-                                        <div className="h-[90.5vh] w-[30vw] flex justify-center items-center bg-white">
+                                        <div className="h-[90.5vh] w-[32vw] flex justify-center items-center bg-white">
                                             <div className="text-center">
                                                 <div className="text-2xl font-bold text-gray-500">Loading...</div>
                                                 <div className="text-gray-500">Please wait.</div>
