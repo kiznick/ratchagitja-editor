@@ -25,7 +25,7 @@ function App() {
 
     const [isOpenFileList, setOpenFileList] = useState<boolean>(true)
 
-    const [mdFile, setMdFile] = useState<string | undefined>('**Hello world!!!**')
+    const [mdFile, setMdFile] = useState<string | undefined>('')
     const [isPassTutorial, setIsPassTutorial] = useState<boolean>(true)
 
     useEffect(() => {
@@ -111,7 +111,16 @@ function App() {
     }, [])
 
     if(isLoading) {
-        return <div>Loading...</div>
+        return (
+            <div className="flex fixed inset-0 w-screen h-screen">
+                <div className="m-auto">
+                    <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-slate-400"></div>
+                        <div className="text-2xl mt-4">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     async function viewPDF(file: File) {
