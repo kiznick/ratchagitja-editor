@@ -10,10 +10,11 @@ export default function FileItem(props: Props) {
     const { file, searchKeywork } = props
     
     return (
-        <article className="flex items-start space-x-6 p-6">
+        <article className={`flex items-start space-x-6 p-6 ${file.is_draft && `bg-slate-900`}`}>
             <img src="http://placekitten.com/120/176" alt="" width="60" height="88" className="flex-none rounded-md bg-slate-100" />
             <div className="min-w-0 relative flex-auto">
                 <h2 className="font-semibold text-white" title={file.เรื่อง}>
+                    {file.is_draft && `⭐ `}
                     <Highlighter
                         highlightClassName="bg-pink-400 text-white rounded"
                         searchWords={[searchKeywork]}

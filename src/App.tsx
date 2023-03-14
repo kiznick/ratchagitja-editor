@@ -18,7 +18,7 @@ function App() {
 
     const [currentPdfPageNumber, setCurrentPdfPageNumber] = useState<number>(1)
     const [pdfPageNumber, setPdfPageNumber] = useState<number>(1)
-    const [pdfFile, setPdfFile] = useState<any>()
+    const [pdfFile, setPdfFile] = useState<string | ArrayBuffer | null>()
     const [isPdfLoading, setPdfLoading] = useState<boolean>(false)
 
     const [currentFile, setCurrentFile] = useState<File | null>(null)
@@ -30,9 +30,60 @@ function App() {
 
     useEffect(() => {
         async function fetchData() {
-            const response = await fetch('https://raw.githubusercontent.com/narze/ratchagitja.md/main/data/ratchakitcha.csv')
-            const data = await response.text()
-            const json = await csv().fromString(data)
+            const request_folder = fetch('https://api.github.com/repos/narze/ratchagitja.md/git/trees/main')
+            const request_filelist = fetch('https://raw.githubusercontent.com/narze/ratchagitja.md/main/data/ratchakitcha.csv')
+
+            const [response_folder, response_filelist] = await Promise.all([request_folder, request_filelist])
+            const data_folder = await response_folder.json()
+            const document_folder = data_folder.tree.find((item: {
+                path: string
+                [key: string]: string
+            }) => item.path === 'entries')
+
+            const draft_available: string[] = []
+
+            if (document_folder) {
+                const request_draft = await fetch(document_folder.url)
+                const data_draft = await request_draft.json()
+                const draft_md_file = await data_draft.tree.filter((item: {
+                    path: string
+                    [key: string]: string
+                }) => item.path.endsWith('.md'))
+
+                if (draft_md_file) {
+                    // loop through all md files
+                    await draft_md_file.map(async (item: {
+                        path: string
+                        [key: string]: string
+                    }) => {
+                        draft_available.push(item.path.replace('.md', ''))
+                    })
+                }
+            }
+
+            const data_filelist = await response_filelist.text()
+            const json = await csv().fromString(data_filelist)
+
+            const modifiedJson: File[] = []
+            
+            json.map(async (item: File) => {
+                if(item['ประเภท'] != 'ก') {
+                    return
+                }
+
+                if (modifiedJson.length > 99) {
+                    return
+                }
+
+                if (draft_available.includes((item.URL.split('/').pop() || '').replace('.pdf', ''))) {
+                    modifiedJson.unshift({
+                        ...item,
+                        is_draft: true
+                    })
+                }
+
+                modifiedJson.push(item)
+            })
 
             setFileList([
                 {
@@ -46,15 +97,13 @@ function App() {
                     'หน้า': '0',
                     'เล่มที่': '0',
                 },
-                ...json.filter((item: File) => item['ประเภท'] === 'ก').slice(0, 99)
+                ...modifiedJson
             ]) // limit 100
             setIsLoading(false)
         }
 
         fetchData()
-    }, [])
 
-    useEffect(() => {
         const is_pass_tutorial = sessionStorage.getItem(storage_is_pass_tutorial)
         if(!is_pass_tutorial) {
             setIsPassTutorial(false)
@@ -65,10 +114,15 @@ function App() {
         return <div>Loading...</div>
     }
 
-    async function viewPDF(url: string) {
+    async function viewPDF(file: File) {
+        if(file.id === currentFile?.id) {
+            return setOpenFileList(false)
+        }
+        
+        setCurrentFile(file)
         setPdfLoading(true)
-        const fileName = url.split('/').pop()
-
+        
+        const fileName = file.URL.split('/').pop()
         fetch('https://anywhere.ntsd.workers.dev/' + fileName,
             {
                 "method": "GET",
@@ -91,20 +145,33 @@ function App() {
                 setOpenFileList(false)
                 setPdfLoading(false)
             }
+
+            if(file.is_draft) {
+                const draft_file = await fetch('https://raw.githubusercontent.com/narze/ratchagitja.md/main/entries/' + (fileName || '').replace('pdf', 'md'))
+                if(!draft_file.ok) {
+                    return draft_file.text().then(text => { throw new Error(text) })
+                }
+
+                const draft_file_text = await draft_file.text()
+                setMdFile(draft_file_text)
+                alert('This file is draft. It may contain some errors.')
+            }
+
         }).catch(err => {
             setPdfLoading(false)
             console.log('caught it!', err);
             alert('Fetch error: ' + err)
         })
+
     }
 
-    function closePDF() {
-        setPdfFile(null)
-        setPdfPageNumber(0)
-        setCurrentPdfPageNumber(0)
-        setOpenFileList(true)
-        setCurrentFile(null)
-    }
+    // function closePDF() {
+    //     setPdfFile(null)
+    //     setPdfPageNumber(0)
+    //     setCurrentPdfPageNumber(0)
+    //     setOpenFileList(true)
+    //     setCurrentFile(null)
+    // }
 
     function passTutorial() {
         if(isPassTutorial) {
@@ -132,8 +199,20 @@ function App() {
                 <div className={`col-span-12 md:col-span-3 ${!isOpenFileList &&  `hidden`}`}>
                     <div className="rounded-xl shadow-xl divide-y my-auto xl:mt-18 bg-slate-800 divide-slate-200/5 h-full">
                         
-                        <div className="group relative py-4 px-6">
-                            <div className="relative mt-2 rounded-md shadow-sm">
+                        <div className="group relative py-4 px-6 flex">
+                            <div className="relative mt-2 mr-4">
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center p-2 rounded-md text-slate-200 hover:text-white hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-white"
+                                    onClick={() => setOpenFileList(false)}
+                                >
+                                    <span className="sr-only">Close sidebar</span>
+                                    <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className="relative mt-2 rounded-md shadow-sm w-full">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <span className="text-gray-500 sm:text-sm">
                                         <svg
@@ -152,7 +231,7 @@ function App() {
                                     type="text"
                                     name="price"
                                     id="price"
-                                    className="block w-full rounded-md border-0 py-2 pl-10 pr-20 text-white ring-1 ring-inset ring-gray-300 placeholder:text-gray-400focus:ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-2 pl-10 pr-5 text-white ring-1 ring-inset ring-gray-300 placeholder:text-gray-400focus:ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6"
                                     placeholder="Search file..."
                                     onChange={(e) => setSearchKeywork(e.target.value)}
                                 />
@@ -164,8 +243,7 @@ function App() {
                                 <div
                                     key={file.id}
                                     onClick={() => {
-                                        viewPDF(file.URL)
-                                        setCurrentFile(file)
+                                        viewPDF(file)
                                     }}
                                 >
                                     <FileItem

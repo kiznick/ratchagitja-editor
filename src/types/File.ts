@@ -8,4 +8,5 @@ export type File = {
     ประเภท: string
     หน้า: string
     เล่มที่: string
+    is_draft?: boolean
 }
