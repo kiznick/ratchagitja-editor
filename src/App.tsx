@@ -46,7 +46,7 @@ function App() {
                     'หน้า': '0',
                     'เล่มที่': '0',
                 },
-                ...json.slice(0, 99)
+                ...json.filter((item: File) => item['ประเภท'] === 'ก').slice(0, 99)
             ]) // limit 100
             setIsLoading(false)
         }
@@ -67,11 +67,16 @@ function App() {
 
     async function viewPDF(url: string) {
         setPdfLoading(true)
-        fetch('https://cors-anywhere.herokuapp.com/' + url, {
-            headers: {
-                'Origin': ''
+        const fileName = url.split('/').pop()
+
+        fetch('https://anywhere.ntsd.workers.dev/' + fileName,
+            {
+                "method": "GET",
+                "headers": {
+                    "i1ove1oongtoo": "ju5tK1dding"
+                }
             }
-        }).then(async (response) => {
+        ).then(async (response) => {
             if(!response.ok) {
                 return response.text().then(text => { throw new Error(text) })
             }
